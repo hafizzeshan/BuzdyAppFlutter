@@ -8,6 +8,8 @@ import 'package:buzdy/views/customText.dart';
 import 'package:buzdy/views/ui_helpers.dart';
 
 class DealerScreen extends StatefulWidget {
+  const DealerScreen({super.key});
+
   @override
   State<DealerScreen> createState() => _DealerScreenState();
 }

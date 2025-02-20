@@ -6,6 +6,8 @@ import 'package:buzdy/views/customText.dart'; // Replace with your actual import
 import 'package:buzdy/views/ui_helpers.dart'; // Replace with your actual imports
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }

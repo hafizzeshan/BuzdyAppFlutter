@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // For `Get.height` and `Get.width`
 
 class FeedScreen extends StatefulWidget {
+  const FeedScreen({super.key});
+
   @override
   State<FeedScreen> createState() => _FeedScreenState();
 }

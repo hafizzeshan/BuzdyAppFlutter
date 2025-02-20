@@ -12,6 +12,8 @@ import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -53,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: appBarrWitoutAction(
         title: "Merchants & Banks",
         centerTitle: true,
-        leadingWidget: Container(
+        leadingWidget: SizedBox(
           width: 10,
           height: 5,
         ),

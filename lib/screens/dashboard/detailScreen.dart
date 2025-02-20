@@ -18,7 +18,7 @@ class DetailScreen extends StatelessWidget {
   final String operatingHours;
   final String offDays;
 
-  DetailScreen({
+  DetailScreen({super.key, 
     this.model,
     required this.title,
     required this.imageUrls,
