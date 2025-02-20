@@ -20,6 +20,7 @@ class Responses {
       'deal',
       'banks',
       'atm',
+      'merchants',
     ];
 
     // Find the first existing key in the JSON

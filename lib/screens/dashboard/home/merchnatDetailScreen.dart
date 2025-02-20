@@ -1,4 +1,5 @@
 import 'package:buzdy/screens/dashboard/home/model/bankModel.dart';
+import 'package:buzdy/screens/dashboard/home/model/merchnatModel.dart';
 import 'package:buzdy/views/appBar.dart';
 import 'package:buzdy/views/text_styles.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -7,8 +8,8 @@ import 'package:buzdy/views/colors.dart';
 import 'package:buzdy/views/customText.dart';
 import 'package:buzdy/views/ui_helpers.dart';
 
-class DetailScreen extends StatelessWidget {
-  Bank? model;
+class MerchnatDetailScreen extends StatelessWidget {
+  MerchantModelData? model;
   final String title;
   final List<String> imageUrls; // List of image URLs for the carousel
   final String description;
@@ -18,7 +19,7 @@ class DetailScreen extends StatelessWidget {
   final String operatingHours;
   final String offDays;
 
-  DetailScreen({
+  MerchnatDetailScreen({
     super.key,
     this.model,
     required this.title,

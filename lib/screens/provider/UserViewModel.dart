@@ -4,6 +4,7 @@ import 'package:buzdy/response/api_response.dart';
 import 'package:buzdy/response/status.dart';
 import 'package:buzdy/screens/dashboard.dart';
 import 'package:buzdy/screens/dashboard/home/model/bankModel.dart';
+import 'package:buzdy/screens/dashboard/home/model/merchnatModel.dart';
 import 'package:buzdy/views/ui_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -12,8 +13,20 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserViewModel extends ChangeNotifier {
+  // Bank Data
+  List<Bank> bankList = [];
+  int bankcurrentPage = 1; // Track the current page
+  bool bankisLoadingMore = false; // Track if more data is being fetched
+  bool bankhasMoreData = true; // If no more pages, stop loading
+  //Merchant Data
+  List<MerchantModelData> merchantList = [];
+
+  int merchantcurrentPage = 1; // Track the current page
+  bool merchantisLoadingMore = false; // Track if more data is being fetched
+  bool merchanthasMoreData = true; // If no more pages, stop loading
   UserViewModel() {
-    getAllBanks(pageNumber: 1);
+    getAllBanks(pageNumber: bankcurrentPage);
+    getAllMarchants(pageNumber: merchantcurrentPage);
   }
   // auth
   Future login({payload}) async {
@@ -62,30 +75,81 @@ class UserViewModel extends ChangeNotifier {
   }
 
   // banks
-  List<Bank> bankList = [];
-  Future getAllBanks({pageNumber}) async {
+  Future getAllBanks({required int pageNumber}) async {
+    print("bank---------");
+    if (bankisLoadingMore) return; // Prevent multiple API calls
+
+    bankisLoadingMore = true;
+    notifyListeners();
+
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     ApiResponse res = await repository.getAllBanks(PageNumber: pageNumber);
+
     if (res.status == Status.completed) {
       Responses ress = res.data;
-
       if (ress.status == 1) {
-        // Properly converting the response data
         BankModel model = BankModel.fromJson({
           "status": ress.status,
           "message": ress.message,
-          "banks": ress.data, // Ensure it's passed as a list
+          "banks": ress.data,
           "pagination": ress.pagination
         });
-        bankList = model.banks;
-        notifyListeners();
-      } else {
-        print("ERR.....p:   ${ress.status}");
+
+        if (model.banks.isNotEmpty) {
+          bankList.addAll(model.banks); // Append new banks to the list
+          bankcurrentPage++; // Move to next page
+          print("Fetching more banks... Page: $pageNumber");
+          print("Total banks loaded: ${bankList.length}");
+        } else {
+          bankhasMoreData = false; // No more data to load
+        }
       }
     } else {
       UIHelper.showMySnak(
           title: "ERROR", message: res.message.toString(), isError: true);
     }
+
+    bankisLoadingMore = false;
+    notifyListeners();
+  }
+
+  Future getAllMarchants({required int pageNumber}) async {
+    print("merchnat---------");
+
+    if (merchantisLoadingMore) return; // Prevent multiple API calls
+
+    merchantisLoadingMore = true;
+    notifyListeners();
+
+    AuthHttpApiRepository repository = AuthHttpApiRepository();
+    ApiResponse res = await repository.getAllMerchants(PageNumber: pageNumber);
+
+    if (res.status == Status.completed) {
+      Responses ress = res.data;
+      if (ress.status == 1) {
+        MerchantModel model = MerchantModel.fromJson({
+          "status": ress.status,
+          "message": ress.message,
+          "merchants": ress.data,
+          "pagination": ress.pagination
+        });
+
+        if (model.merchants.isNotEmpty) {
+          merchantList.addAll(model.merchants); // Append new banks to the list
+          merchantcurrentPage++; // Move to next page
+          print("Fetching more merchnats... Page: $pageNumber");
+          print("Total merchants loaded: ${merchantList.length}");
+        } else {
+          merchanthasMoreData = false; // No more data to load
+        }
+      }
+    } else {
+      UIHelper.showMySnak(
+          title: "ERROR", message: res.message.toString(), isError: true);
+    }
+
+    merchantisLoadingMore = false;
+    notifyListeners();
   }
 
   easyLoadingStart({status}) {

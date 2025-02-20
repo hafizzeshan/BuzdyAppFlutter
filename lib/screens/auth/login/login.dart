@@ -163,8 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 // "password": "A@12abcdef"
                 if (_formKey.currentState!.validate()) {
                   pr.login(payload: {
-                    "email": "user7345@gmail.com",
-                    "password": "A@12abcdef",
+                    "email": "user@gmail.com",
+                    "password": "User@12ab",
                   });
                 }
 

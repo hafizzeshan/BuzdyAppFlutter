@@ -98,4 +98,24 @@ class AuthHttpApiRepository implements AuthRepository {
     }
     return response;
   }
+
+  @override
+  Future<ApiResponse<Responses>> getAllMerchants({int PageNumber = 1}) async {
+    ApiResponse<Responses> response = ApiResponse.notStarted();
+    try {
+      response = ApiResponse.loading();
+      dynamic result = await _apiServices
+          .getGetApiResponse(
+              _apiServices.getAllMerchantEndPoint(pageNumber: PageNumber))
+          .then((value) {
+        return ApiResponse.completed(Responses.fromJson(value));
+      }).catchError((error, stackTrace) {
+        return ApiResponse.error(error.toString());
+      });
+      response = result;
+    } catch (error) {
+      response = ApiResponse.error(error.toString());
+    }
+    return response;
+  }
 }

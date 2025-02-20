@@ -29,6 +29,11 @@ class NetworkApiService implements BaseApiServices {
   }
 
   @override
+  String getAllMerchantEndPoint({pageNumber}) {
+    return "https://api.buzdy.com/merchants?page_no=$pageNumber&page_size=10";
+  }
+
+  @override
   String updateProfile() {
     return _updateProfile;
   }
@@ -51,7 +56,7 @@ class NetworkApiService implements BaseApiServices {
   @override
   Future getGetApiResponse(String url) async {
     if (kDebugMode) {
-      print(url);
+      print("API URL--- ${url}");
     }
     dynamic responseJson;
     try {

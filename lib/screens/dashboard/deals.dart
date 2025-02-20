@@ -1,8 +1,6 @@
 import 'package:buzdy/screens/dashboard/bubbleCrypto.dart';
 import 'package:buzdy/views/custom_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:buzdy/views/appBar.dart';
 import 'package:buzdy/views/colors.dart';
 import 'package:buzdy/views/customText.dart';
 import 'package:buzdy/views/ui_helpers.dart';
