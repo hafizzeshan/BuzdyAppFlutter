@@ -148,47 +148,71 @@ class _HomeScreenState extends State<HomeScreen> {
               kText(text: "Merchants", fWeight: fontWeightBold, fSize: 18.0),
               SizedBox(height: 10),
               SizedBox(
-                height: Get.height / 5.5,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  controller: _scrollControllerMerchant,
-                  itemCount: pr.merchantList.length,
-                  itemBuilder: (context, index) {
-                    if (index == pr.merchantList.length) {
-                      // Show loader at the end while fetching new items
-                      return pr.merchantisLoadingMore
-                          ? const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : const SizedBox(); // If not loading, return empty space
-                    }
-                    MerchantModelData model = pr.merchantList[index];
-                    return InkWell(
-                        onTap: () {
-                          Get.to(
-                            MerchnatDetailScreen(
-                              model: model,
-                              title: model.name,
-                              imageUrls: [
-                                "https://portal.buzdy.com//storage/admin/uploads/images/16061334945fbba6f60d1e6.jpg",
-                                "https://portal.buzdy.com//storage/admin/uploads/images/16061335095fbba70511ec0.jpg",
-                                "https://portal.buzdy.com//storage/admin/uploads/images/16061335255fbba715d6610.jpg"
-                              ],
-                              description:
-                                  "All information provided on this webpage is courtesy of NRSP Microfinance Bank Limited.",
-                              address: model.address ?? "",
-                              email: model.email ?? "",
-                              phone: model.phone ?? "",
-                              operatingHours: "08:00:00 - 18:00:00",
-                              offDays: "Saturday, Sunday",
-                            ),
-                          );
+                height: Get.height / 5.4,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        controller: _scrollControllerMerchant,
+                        itemCount: pr.merchantList.length,
+                        itemBuilder: (context, index) {
+                          if (index == pr.merchantList.length) {
+                            // Show loader at the end while fetching new items
+                            return pr.merchantisLoadingMore
+                                ? const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : const SizedBox(); // If not loading, return empty space
+                          }
+                          MerchantModelData model = pr.merchantList[index];
+                          return InkWell(
+                              onTap: () {
+                                Get.to(
+                                  MerchnatDetailScreen(
+                                    model: model,
+                                    title: model.name,
+                                    imageUrls: [
+                                      "https://portal.buzdy.com//storage/admin/uploads/images/16061334945fbba6f60d1e6.jpg",
+                                      "https://portal.buzdy.com//storage/admin/uploads/images/16061335095fbba70511ec0.jpg",
+                                      "https://portal.buzdy.com//storage/admin/uploads/images/16061335255fbba715d6610.jpg"
+                                    ],
+                                    description:
+                                        "All information provided on this webpage is courtesy of NRSP Microfinance Bank Limited.",
+                                    address: model.address ?? "",
+                                    email: model.email ?? "",
+                                    phone: model.phone ?? "",
+                                    operatingHours: "08:00:00 - 18:00:00",
+                                    offDays: "Saturday, Sunday",
+                                  ),
+                                );
+                              },
+                              child: listWidget(model: model));
                         },
-                        child: listWidget(model: model));
-                  },
+                      ),
+                    ),
+
+                    /// **Show Loader When Loading More**
+                    if (pr.merchantisLoadingMore)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+
+                    /// **No More Data Message**
+                    if (!pr.merchanthasMoreData && pr.merchantList.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "No more",
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               SizedBox(height: 20),
@@ -338,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: kText(
                                 text: model!.name,
                                 fWeight: fontWeightBold,
-                                fSize: 12.0,
+                                fSize: 10.0,
                                 textalign: TextAlign.center,
                                 maxLines: 2,
                               ),
@@ -368,7 +392,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: index < _rating
                                         ? Colors.yellow
                                         : Colors.grey,
-                                    size: 13,
+                                    size: 10,
                                   ),
                                 );
                               }),
@@ -382,6 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
+                      UIHelper.verticalSpaceSm5,
                     ],
                   ),
                 ),

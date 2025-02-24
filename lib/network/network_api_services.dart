@@ -12,10 +12,8 @@ import 'base_api_services.dart';
 
 class NetworkApiService implements BaseApiServices {
   final String _baseUrl = "https://api.buzdy.com";
-  final String _registrationEndPoint = "/auth/registeruser";
   final String _loginEndPoint = "/users/signin";
-  final String _registerEndPoint = "/users/signin";
-
+  final String _registerEndPoint = "/users/signup";
   final String _updateProfile = "/api/customer/updateProfile";
 
   @override
@@ -34,13 +32,13 @@ class NetworkApiService implements BaseApiServices {
   }
 
   @override
-  String updateProfile() {
-    return _updateProfile;
+  String rugChecktEndPoint({securityToken}) {
+    return "https://api.buzdy.com/rugcheck?string=$securityToken";
   }
 
   @override
-  String getRegistrationEndPoint() {
-    return _registrationEndPoint;
+  String updateProfile() {
+    return _updateProfile;
   }
 
   @override

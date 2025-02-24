@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 import 'package:buzdy/mainresponse/loginresponcedata.dart';
 import 'package:buzdy/repository/auth_api/auth_http_api_repository.dart';
 import 'package:buzdy/response/api_response.dart';
 import 'package:buzdy/response/status.dart';
+import 'package:buzdy/screens/auth/model/userModel.dart';
 import 'package:buzdy/screens/dashboard.dart';
+import 'package:buzdy/screens/dashboard/deals/model.dart/bubbleCoinModel.dart';
+import 'package:buzdy/screens/dashboard/deals/model.dart/coinModel.dart';
+import 'package:buzdy/screens/dashboard/deals/model.dart/rugcheckModel.dart';
 import 'package:buzdy/screens/dashboard/home/model/bankModel.dart';
 import 'package:buzdy/screens/dashboard/home/model/merchnatModel.dart';
 import 'package:buzdy/views/ui_helpers.dart';
@@ -11,22 +17,32 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class UserViewModel extends ChangeNotifier {
+  List<Map<String, dynamic>> listCoins = [];
+
   // Bank Data
   List<Bank> bankList = [];
   int bankcurrentPage = 1; // Track the current page
   bool bankisLoadingMore = false; // Track if more data is being fetched
   bool bankhasMoreData = true; // If no more pages, stop loading
+
   //Merchant Data
   List<MerchantModelData> merchantList = [];
 
   int merchantcurrentPage = 1; // Track the current page
   bool merchantisLoadingMore = false; // Track if more data is being fetched
   bool merchanthasMoreData = true; // If no more pages, stop loading
+
+  UserModelData? userModel;
+
+  List<BubbleCoinModel> bubbleCoins = [];
   UserViewModel() {
     getAllBanks(pageNumber: bankcurrentPage);
     getAllMarchants(pageNumber: merchantcurrentPage);
+    fetchCoins(limit: 10);
+    fetchBubbleCoins();
   }
   // auth
   Future login({payload}) async {
@@ -40,9 +56,15 @@ class UserViewModel extends ChangeNotifier {
       easyLoadingStop();
       UIHelper.showMySnak(
           title: "Buzdy", message: "Login successfully", isError: false);
+
+      userModel = UserModelData.fromJson(ress.data);
       await savetoken(token: ress.data['token'].toString());
+      print("Save UserModel ${userModel!.toJson().toString()}");
+
       // await savePhone(phone: payload['phoneNumber']);
       Get.offAll(DashBorad(index: 0));
+
+      notifyListeners();
       //  await getApiToken();
     } else {
       easyLoadingStop();
@@ -55,22 +77,49 @@ class UserViewModel extends ChangeNotifier {
   Future register({payload}) async {
     AuthHttpApiRepository repository = AuthHttpApiRepository();
     easyLoadingStart();
-    ApiResponse res = await repository.registerApi(payload);
-    Responses ress = res.data;
 
-    if (ress.status == 1) {
-      print("RESPOSNE----------- ${ress.data}");
+    try {
+      ApiResponse res = await repository.registerApi(payload);
+
+      // Ensure that res.data is properly initialized
+      if (res.data == null) {
+        easyLoadingStop();
+        UIHelper.showMySnak(
+            title: "ERROR",
+            message: "Unexpected error. Please try again.",
+            isError: true);
+        return;
+      }
+
+      Responses ress = res.data;
+
+      if (ress.status == 1) {
+        print("RESPONSE----------- ${ress.data}");
+        easyLoadingStop();
+        UIHelper.showMySnak(
+            title: "Buzdy",
+            message: ress.message ?? "Signup successful",
+            isError: false);
+
+        userModel = UserModelData.fromJson(ress.data);
+        await savetoken(token: ress.data['token'].toString());
+        print("Save UserModel ${userModel!.toJson().toString()}");
+        Get.offAll(DashBorad(index: 0));
+        notifyListeners();
+      } else {
+        easyLoadingStop();
+        UIHelper.showMySnak(
+            title: "ERROR",
+            message: ress.message ?? "Something went wrong",
+            isError: true);
+      }
+    } catch (e) {
       easyLoadingStop();
       UIHelper.showMySnak(
-          title: "Buzdy", message: "Register successfully", isError: false);
-      await savetoken(token: ress.data['token'].toString());
-      // await savePhone(phone: payload['phoneNumber']);
-      Get.offAll(DashBorad(index: 0));
-      //  await getApiToken();
-    } else {
-      easyLoadingStop();
-      UIHelper.showMySnak(
-          title: "ERROR", message: ress.message.toString(), isError: true);
+          title: "ERROR",
+          message: "An unexpected error occurred: $e",
+          isError: true);
+      print("Register API Error: $e");
     }
   }
 
@@ -152,6 +201,142 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+// deals
+  List<CoinModel> _coins = [];
+  List<CoinModel> _filteredCoins = [];
+  int _offset = 0;
+  bool _isFetching = false;
+  bool _hasMore = true;
+
+  List<CoinModel> get coins => _filteredCoins;
+  bool get isFetching => _isFetching;
+
+  Future<void> fetchCoins({int limit = 10, bool isRefresh = false}) async {
+    if (_isFetching || !_hasMore) return;
+
+    _isFetching = true;
+    notifyListeners();
+
+    if (isRefresh) {
+      _offset = 0;
+      _coins.clear();
+      _filteredCoins.clear();
+      _hasMore = true;
+    }
+
+    final url = Uri.parse(
+        'https://frontend-api.pump.fun/coins?offset=$_offset&limit=$limit&sort=last_trade_timestamp&order=DESC&includeNsfw=false');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = jsonDecode(response.body);
+      List<CoinModel> newCoins =
+          jsonData.map((coin) => CoinModel.fromJson(coin)).toList();
+
+      if (newCoins.isNotEmpty) {
+        _coins.addAll(newCoins);
+        _filteredCoins = List.from(_coins);
+        _offset += limit;
+      } else {
+        _hasMore = false;
+      }
+    } else {
+      throw Exception('Failed to load coins');
+    }
+
+    _isFetching = false;
+    notifyListeners();
+  }
+
+  Future<InvestmentRanking?> checkCoinSecurity(
+      {required String securityToken}) async {
+    print("checkCoinSecurity---------");
+    if (bankisLoadingMore) return null; // Prevent multiple API calls
+
+    bankisLoadingMore = true;
+    notifyListeners();
+
+    AuthHttpApiRepository repository = AuthHttpApiRepository();
+    ApiResponse res =
+        await repository.checkCoinSecurity(securityToken: securityToken);
+    print(" RESPONSE---------- ${res.data.toString()}");
+
+    Responses ress = res.data;
+
+    InvestmentRanking? investmentRanking;
+
+    if (res.status == Status.completed) {
+      if (ress.status == 1) {
+        // ✅ Extracting InvestmentRanking
+        investmentRanking =
+            InvestmentRanking.fromJson(ress.data["investmentRanking"]);
+
+        print("RESPONSE----------- ${investmentRanking.toJson().toString()}");
+        notifyListeners();
+      }
+    } else {
+      UIHelper.showMySnak(
+          title: "ERROR", message: res.message.toString(), isError: true);
+    }
+
+    bankisLoadingMore = false;
+    notifyListeners();
+
+    // ✅ Return Investment Ranking Data
+    return investmentRanking;
+  }
+
+  void searchCoins(String query) {
+    if (query.isEmpty) {
+      _filteredCoins = List.from(_coins);
+    } else {
+      _filteredCoins = _coins
+          .where((coin) =>
+              coin.name.toLowerCase().contains(query.toLowerCase()) ||
+              coin.symbol.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    notifyListeners();
+  }
+
+  Future<List<BubbleCoinModel>> fetchBubbleCoins() async {
+    try {
+      print("fetchBubbleCoins---------");
+      var request = http.Request(
+        'GET',
+        Uri.parse(
+            'https://cryptobubbles.net/backend/data/bubbles1000.usd.json'),
+      );
+
+      http.StreamedResponse response = await request.send();
+
+      if (response.statusCode == 200) {
+        String responseData = await response.stream.bytesToString();
+        List<dynamic> jsonData = jsonDecode(responseData);
+        print(jsonData.length.toString());
+
+        // Parse top 50 coins only
+        List<BubbleCoinModel> coins = jsonData
+            .map((coin) => BubbleCoinModel.fromJson(coin))
+            .toList()
+            .sublist(0, 50);
+
+        bubbleCoins = coins;
+        notifyListeners();
+        print("coins.length: ${coins.length}");
+
+        return coins;
+      } else {
+        print("Error fetching data: ${response.reasonPhrase}");
+        return [];
+      }
+    } catch (e) {
+      print("Exception: $e");
+      return [];
+    }
+  }
+
   easyLoadingStart({status}) {
     EasyLoading.show(
       indicator:
@@ -169,5 +354,9 @@ class UserViewModel extends ChangeNotifier {
     SharedPreferences pref = await SharedPreferences.getInstance();
     await pref.setString('token', token);
     print("token saved successfully: $token");
+  }
+
+  refresh() {
+    notifyListeners();
   }
 }

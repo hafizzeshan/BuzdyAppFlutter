@@ -1,5 +1,8 @@
 import 'dart:math';
+import 'package:buzdy/screens/dashboard/deals/model.dart/bubbleCoinModel.dart';
+import 'package:buzdy/screens/provider/UserViewModel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class DealsScreen extends StatefulWidget {
   const DealsScreen({super.key});
@@ -12,6 +15,7 @@ class _DealsScreenState extends State<DealsScreen>
     with SingleTickerProviderStateMixin {
   final Random _random = Random();
   late AnimationController _controller;
+  List<BubbleCoinModel> bubbleCoins = [];
 
   final List<Map<String, dynamic>> cryptoCoins = List.generate(60, (index) {
     final randomPercentage = (Random().nextDouble() * 20 - 10);
@@ -29,6 +33,10 @@ class _DealsScreenState extends State<DealsScreen>
   @override
   void initState() {
     super.initState();
+    UserViewModel pr = Provider.of<UserViewModel>(context, listen: false);
+    pr.bubbleCoins = bubbleCoins;
+    pr.refresh();
+
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 16),

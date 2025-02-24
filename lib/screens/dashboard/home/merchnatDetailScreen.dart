@@ -1,4 +1,3 @@
-import 'package:buzdy/screens/dashboard/home/model/bankModel.dart';
 import 'package:buzdy/screens/dashboard/home/model/merchnatModel.dart';
 import 'package:buzdy/views/appBar.dart';
 import 'package:buzdy/views/text_styles.dart';
